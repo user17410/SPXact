@@ -44,6 +44,18 @@ class OptInRequest(BaseModel):
     opt_in: bool
 
 
+class DispatchRequest(BaseModel):
+    """
+    Optional live GPS override — lets the rider's current position become the
+    delivery address's geofence anchor. Needed for the two-phone live flow,
+    where there's no separately-registered street address: whatever real spot
+    the rider is standing at when they accept the booking IS the delivery
+    address for geofence purposes.
+    """
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+
+
 class RescheduleRequest(BaseModel):
     parcel_id: int
     preferred_window: str = ""

@@ -69,7 +69,7 @@ class Parcel(SQLModel, table=True):
     address_text: str = ""
     lat: float = 0.0
     lng: float = 0.0
-    geofence_m: int = 90
+    geofence_m: int = 30
     promised_window: str = ""
     status: ParcelStatus = ParcelStatus.CREATED
     customer_id: Optional[int] = Field(default=None, foreign_key="customer.id")

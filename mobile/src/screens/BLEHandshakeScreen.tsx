@@ -9,9 +9,13 @@ interface Props {
   onComplete: () => void;
   onFailed?: () => void;
   mode: 'buyer' | 'rider';
+  /** Fired the instant "Package Delivered" is pressed, before the confirmation animation plays. */
+  onDeliveredPressed?: () => void;
+  /** Fired the instant "Failed to Deliver" is pressed. */
+  onFailedPressed?: () => void;
 }
 
-export default function BLEHandshakeScreen({ onComplete, onFailed, mode }: Props) {
+export default function BLEHandshakeScreen({ onComplete, onFailed, mode, onDeliveredPressed, onFailedPressed }: Props) {
   const [phase, setPhase] = useState<'connecting' | 'ready' | 'delivered'>('connecting');
   const wifiAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -51,6 +55,7 @@ export default function BLEHandshakeScreen({ onComplete, onFailed, mode }: Props
   }, []);
 
   const handleDelivered = () => {
+    onDeliveredPressed?.();
     setPhase('delivered');
     Vibration.vibrate([0, 80, 40, 120]);
 
@@ -71,9 +76,8 @@ export default function BLEHandshakeScreen({ onComplete, onFailed, mode }: Props
   };
 
   const handleFailed = () => {
-    if (onFailed) {
-      onFailed();
-    }
+    onFailedPressed?.();
+    onFailed?.();
   };
 
   // Item Delivered state (previously "presence confirmed") - less green

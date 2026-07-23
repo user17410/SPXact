@@ -12,3 +12,7 @@ export { default as RiderOnWayScreen } from './RiderOnWayScreen';
 export { default as BLEHandshakeScreen } from './BLEHandshakeScreen';
 export { default as FraudPreventionScreen } from './FraudPreventionScreen';
 export { default as DemoFlowScreen } from './DemoFlowScreen';
+export { default as HouseholdMembersScreen } from './HouseholdMembersScreen';
+export { default as RoleSelectScreen } from './RoleSelectScreen';
+export { default as RiderLiveScreen } from './RiderLiveScreen';
+export { default as RecipientLiveScreen } from './RecipientLiveScreen';

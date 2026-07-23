@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '../constants';
 import { useRole } from '../context';
+import HouseholdMembersScreen from './HouseholdMembersScreen';
 
 export default function AccountScreen() {
   const { role } = useRole();
   const isBuyer = role === 'buyer';
+  const [showHousehold, setShowHousehold] = useState(false);
+
+  if (showHousehold) {
+    return <HouseholdMembersScreen onBack={() => setShowHousehold(false)} />;
+  }
 
   const menuSections = isBuyer ? [
     { title: 'My Account', items: [
       { icon: 'person-outline', label: 'Personal Info' },
       { icon: 'location-outline', label: 'My Addresses' },
+      { icon: 'people-outline', label: 'Household Members', onPress: () => setShowHousehold(true) },
       { icon: 'card-outline', label: 'Payment Methods' },
       { icon: 'receipt-outline', label: 'Billing History' },
     ]},
@@ -95,7 +102,7 @@ export default function AccountScreen() {
           <View key={section.title} style={styles.menuSection}>
             <Text style={styles.menuSectionTitle}>{section.title}</Text>
             {section.items.map((item) => (
-              <TouchableOpacity key={item.label} style={styles.menuItem}>
+              <TouchableOpacity key={item.label} style={styles.menuItem} onPress={(item as any).onPress}>
                 <Ionicons name={item.icon as any} size={22} color={Colors.textSecondary} />
                 <Text style={styles.menuLabel}>{item.label}</Text>
                 <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />

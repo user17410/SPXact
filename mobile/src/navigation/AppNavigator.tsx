@@ -4,31 +4,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants';
 import { useRole } from '../context';
-import {
-  HomeScreen,
-  ServicesScreen,
-  ActivityScreen,
-  AccountScreen,
-  RiderHomeScreen,
-  RiderDeliveriesScreen,
-  RiderEarningsScreen,
-  LoginScreen,
-  DemoFlowScreen,
-} from '../screens';
+import { AccountScreen, RiderLiveScreen, RecipientLiveScreen, RoleSelectScreen } from '../screens';
 
 const Tab = createBottomTabNavigator();
 
-function BuyerTabs() {
+function RecipientTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Services') iconName = focused ? 'grid' : 'grid-outline';
-          else if (route.name === 'Demo') iconName = focused ? 'flash' : 'flash-outline';
-          else if (route.name === 'Activity') iconName = focused ? 'receipt' : 'receipt-outline';
+          if (route.name === 'Delivery') iconName = focused ? 'cube' : 'cube-outline';
           else if (route.name === 'Account') iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -38,10 +25,7 @@ function BuyerTabs() {
         tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Services" component={ServicesScreen} />
-      <Tab.Screen name="Demo" component={DemoFlowScreen} />
-      <Tab.Screen name="Activity" component={ActivityScreen} />
+      <Tab.Screen name="Delivery" component={RecipientLiveScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
@@ -54,10 +38,7 @@ function RiderTabs() {
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'Dashboard') iconName = focused ? 'speedometer' : 'speedometer-outline';
-          else if (route.name === 'Deliveries') iconName = focused ? 'bicycle' : 'bicycle-outline';
-          else if (route.name === 'Demo') iconName = focused ? 'flash' : 'flash-outline';
-          else if (route.name === 'Earnings') iconName = focused ? 'wallet' : 'wallet-outline';
+          if (route.name === 'Delivery') iconName = focused ? 'bicycle' : 'bicycle-outline';
           else if (route.name === 'Account') iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -67,10 +48,7 @@ function RiderTabs() {
         tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
       })}
     >
-      <Tab.Screen name="Dashboard" component={RiderHomeScreen} />
-      <Tab.Screen name="Deliveries" component={RiderDeliveriesScreen} />
-      <Tab.Screen name="Demo" component={DemoFlowScreen} />
-      <Tab.Screen name="Earnings" component={RiderEarningsScreen} />
+      <Tab.Screen name="Delivery" component={RiderLiveScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
@@ -80,12 +58,12 @@ export default function AppNavigator() {
   const { role, isLoggedIn, login } = useRole();
 
   if (!isLoggedIn) {
-    return <LoginScreen onLogin={(selectedRole) => login(selectedRole)} />;
+    return <RoleSelectScreen onSelect={(selectedRole) => login(selectedRole)} />;
   }
 
   return (
     <NavigationContainer>
-      {role === 'buyer' ? <BuyerTabs /> : <RiderTabs />}
+      {role === 'buyer' ? <RecipientTabs /> : <RiderTabs />}
     </NavigationContainer>
   );
 }

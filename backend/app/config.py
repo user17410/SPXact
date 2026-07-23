@@ -6,8 +6,10 @@ import os
 
 # --- Geofence & Dwell ---
 DWELL_MIN: int = int(os.getenv("DWELL_MIN", "180"))  # seconds
-GEOFENCE_M: int = int(os.getenv("GEOFENCE_M", "90"))  # meters
-PROXIMITY_M: int = int(os.getenv("PROXIMITY_M", "50"))  # customer<->rider "co-located" threshold
+GEOFENCE_M: int = int(os.getenv("GEOFENCE_M", "3"))  # meters — phones must be right next to each other
+# For the demo: ~3m means phones side-by-side = "nearby", 5 steps away = "far".
+# GPS indoors can jitter 5-10m so this is intentionally tight for testing.
+PROXIMITY_M: int = int(os.getenv("PROXIMITY_M", "3"))  # customer<->rider "co-located" — must be same spot
 
 # --- Verdict thresholds ---
 CONF_DELIVERED_MIN: int = 70  # minimum confidence for DELIVERED_VERIFIED

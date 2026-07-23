@@ -4,6 +4,7 @@ CORS configured for Expo Go (React Native) + browser access.
 One-command run: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 """
 import json
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -14,6 +15,11 @@ from sqlmodel import Session, SQLModel
 from app.db import create_db_and_tables, engine
 from app.ws_hub import manager
 from app.routers import parcels, location, attempts, ble, ledger, fraud
+
+# INFO-level app logs (e.g. app.routers.location's live presence/distance
+# logging) are silent by default under uvicorn's own logging config — this
+# makes them print to the same terminal you run uvicorn in.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s: %(message)s", datefmt="%H:%M:%S")
 
 
 @asynccontextmanager

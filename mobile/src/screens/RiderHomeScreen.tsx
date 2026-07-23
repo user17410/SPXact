@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Switch, Alert } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography } from '../constants';
+import DeliveryAcceptPopup from './DeliveryAcceptPopup';
 
 const pendingDeliveries = [
   { id: 'SPX90001', pickup: 'SM City Cebu', dropoff: 'IT Park, Cebu', distance: '3.2 km', fee: '₱65', time: '15 min' },
@@ -12,6 +13,15 @@ const pendingDeliveries = [
 
 export default function RiderHomeScreen() {
   const [isOnline, setIsOnline] = React.useState(true);
+  const [popupDelivery, setPopupDelivery] = React.useState<typeof pendingDeliveries[0] | null>(null);
+  const [acceptedIds, setAcceptedIds] = React.useState<Set<string>>(new Set());
+
+  const handleAccept = () => {
+    if (!popupDelivery) return;
+    setAcceptedIds((prev) => new Set(prev).add(popupDelivery.id));
+    setPopupDelivery(null);
+    Alert.alert('Delivery accepted', `${popupDelivery.id} added to your active deliveries.`);
+  };
 
   return (
     <View style={styles.container}>
@@ -78,13 +88,31 @@ export default function RiderHomeScreen() {
                   <Text style={styles.metaText}>{d.time}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.acceptButton}>
-                <Text style={styles.acceptText}>Accept Delivery</Text>
-              </TouchableOpacity>
+              {acceptedIds.has(d.id) ? (
+                <View style={styles.acceptedButton}>
+                  <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
+                  <Text style={styles.acceptedText}>Accepted</Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.acceptButton} onPress={() => setPopupDelivery(d)}>
+                  <Text style={styles.acceptText}>Accept Delivery</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>
       </ScrollView>
+
+      <DeliveryAcceptPopup
+        visible={!!popupDelivery}
+        parcelId={popupDelivery?.id ?? ''}
+        pickup={popupDelivery?.pickup ?? ''}
+        dropoff={popupDelivery?.dropoff ?? ''}
+        distance={popupDelivery?.distance ?? ''}
+        fee={popupDelivery?.fee ?? ''}
+        onAccept={handleAccept}
+        onDecline={() => setPopupDelivery(null)}
+      />
     </View>
   );
 }
@@ -118,4 +146,6 @@ const styles = StyleSheet.create({
   metaText: { ...Typography.caption, color: Colors.textSecondary },
   acceptButton: { backgroundColor: '#2E7D32', borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
   acceptText: { ...Typography.bodyBold, color: Colors.white },
+  acceptedButton: { flexDirection: 'row', gap: 6, backgroundColor: '#E8F5E9', borderRadius: 8, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
+  acceptedText: { ...Typography.bodyBold, color: '#2E7D32' },
 });

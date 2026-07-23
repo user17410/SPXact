@@ -31,6 +31,26 @@ def _generate_otp() -> str:
     return f"{random.randint(1000, 9999)}"
 
 
+def _build_signals(attempt: DeliveryAttempt) -> dict:
+    """Build the signals dict live from attempt fields (used both mid-attempt and at close)."""
+    return {
+        "geofence_entered": attempt.geofence_entered,
+        "dwell_satisfied": attempt.dwell_seconds >= DWELL_MIN,
+        "dwell_seconds": attempt.dwell_seconds,
+        "ble_handshake": attempt.ble_handshake,
+        "customer_presence_confirmed": attempt.customer_presence_confirmed,
+        "customer_signal_present": attempt.customer_signal_present,
+        "otp_verified": attempt.otp_verified,
+        "mock_location": attempt.mock_location,
+        "teleport": attempt.teleport,
+        "photo": bool(attempt.photo_url),
+        "attestation_pass": attempt.attestation_pass,
+        "attestation_fail": attempt.attestation_fail,
+        "accuracy_good": attempt.accuracy_good,
+        "no_geofence_entry": not attempt.geofence_entered,
+    }
+
+
 @router.post("/{parcel_id}/start")
 async def start_attempt(parcel_id: int, session: Session = Depends(get_session)):
     """
@@ -148,23 +168,8 @@ async def close_attempt(
     # Set outcome requested
     attempt.outcome_requested = req.outcome
 
-    # Build signals dict for verdict engine
-    signals = {
-        "geofence_entered": attempt.geofence_entered,
-        "dwell_satisfied": attempt.dwell_seconds >= DWELL_MIN,
-        "dwell_seconds": attempt.dwell_seconds,
-        "ble_handshake": attempt.ble_handshake,
-        "customer_presence_confirmed": attempt.customer_presence_confirmed,
-        "customer_signal_present": attempt.customer_signal_present,
-        "otp_verified": otp_verified,
-        "mock_location": attempt.mock_location,
-        "teleport": attempt.teleport,
-        "photo": bool(attempt.photo_url),
-        "attestation_pass": attempt.attestation_pass,
-        "attestation_fail": attempt.attestation_fail,
-        "accuracy_good": attempt.accuracy_good,
-        "no_geofence_entry": not attempt.geofence_entered,
-    }
+    # Build signals dict for verdict engine (live, from attempt fields)
+    signals = _build_signals(attempt)
 
     # Run Verdict Engine
     state, confidence, allowed, message = decide(req.outcome, signals)
@@ -283,13 +288,16 @@ def get_attempt_status(parcel_id: int, session: Session = Depends(get_session)):
     if not attempt:
         raise HTTPException(status_code=404, detail="No attempt found for this parcel")
 
-    signals = json.loads(attempt.signals_json) if attempt.signals_json != "{}" else {}
+    # Live signals — computed fresh from attempt fields, not the post-close snapshot,
+    # so a rider polling mid-attempt sees current presence/geofence state.
+    signals = _build_signals(attempt)
+    confidence = attempt.confidence if attempt.ended_at else compute_confidence(signals)
 
     return AttemptStatusResponse(
         id=attempt.id,
         parcel_id=attempt.parcel_id,
         verdict_state=attempt.verdict_state,
-        confidence=attempt.confidence,
+        confidence=confidence,
         dwell_seconds=attempt.dwell_seconds,
         signals=signals,
         started_at=attempt.started_at,
